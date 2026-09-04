@@ -1,97 +1,130 @@
-import { PlusCircle, MessageCircle, Send, ShieldCheck, MapPin } from 'lucide-react'
+import { MessageCircle, ShieldCheck, Truck, Lock, CreditCard, Award } from 'lucide-react'
 
 const WHATSAPP_ADMIN = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5545991562811'
 
 export default function StoreFooter() {
-  const waLink = `https://wa.me/${WHATSAPP_ADMIN.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Gostaria de tirar dúvidas com o farmacêutico de plantão.')}`
+  const waLink = `https://wa.me/${WHATSAPP_ADMIN.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Gostaria de falar com o farmacêutico responsável da Tesãi.')}`
 
   return (
-    <footer className="store-footer" style={{ background: '#0a3d62', color: '#fff', padding: '48px 0 24px', marginTop: 60 }}>
-      <div className="store-container">
-        <div className="store-footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 32 }}>
-          {/* Brand */}
+    <footer className="di-footer">
+      {/* 1. Newsletter Row */}
+      <div className="di-newsletter-row">
+        <div className="store-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 20 }}>
           <div>
-            <div className="store-footer-brand" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <div className="store-footer-brand-icon" style={{ background: '#0077b6', color: '#fff', padding: 6, borderRadius: 8 }}>
-                <PlusCircle size={20} />
-              </div>
-              <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>Tesãi</span>
-            </div>
-            <p className="store-footer-desc" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', lineHeight: 1.6 }}>
-              Sua farmácia e importadora de confiança em Ciudad del Este (Paraguai).
-              Linha especializada, medicamentos de procedência e soluções injetáveis com envio seguro para o Brasil.
+            <h3 style={{ fontSize: '1.3rem', fontWeight: 800, margin: '0 0 4px', color: '#FFF' }}>
+              Receba novidades e ofertas exclusivas em primeira mão
+            </h3>
+            <p style={{ margin: 0, color: '#E9D5FF', fontSize: '0.88rem' }}>
+              Cadastre-se para receber atualizações de estoque da linha Tirzepatida e Semaglutida
             </p>
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, color: '#68d8d6', fontSize: '0.8rem' }}>
-              <MapPin size={16} />
-              <span>Av. Adrián Jara c/ Curupayty — Ciudad del Este</span>
-            </div>
           </div>
 
-          {/* Links */}
-          <div>
-            <h4 style={{ color: '#fff', fontSize: '0.95rem', marginBottom: 16 }}>Departamentos</h4>
-            <ul className="store-footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <li><a href="/loja?category=tirzepatida-tirzec" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Linha Tirzepatida • Tirzec</a></li>
-              <li><a href="/loja?category=tirzepatida-outras" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Tirzepatida Outras Linhas</a></li>
-              <li><a href="/loja?category=semaglutida" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Linha Semaglutida</a></li>
-              <li><a href="/loja" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Catálogo Completo</a></li>
-            </ul>
-          </div>
-
-          {/* Info */}
-          <div>
-            <h4 style={{ color: '#fff', fontSize: '0.95rem', marginBottom: 16 }}>Segurança & Envio</h4>
-            <ul className="store-footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <li><a href="/suporte" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Rastrear Meu Pedido</a></li>
-              <li><a href="/suporte" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Como Funciona o Envio CDE → Brasil</a></li>
-              <li><a href="/suporte" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Garantia e Procedência</a></li>
-              <li><a href="/suporte" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.85rem' }}>Dúvidas Frequentes</a></li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 style={{ color: '#fff', fontSize: '0.95rem', marginBottom: 16 }}>Atendimento</h4>
-            <ul className="store-footer-links" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <li>
-                <a
-                  href={waLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: '#25D366',
-                    color: '#fff',
-                    padding: '8px 14px',
-                    borderRadius: 6,
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    fontSize: '0.85rem',
-                  }}
-                >
-                  <MessageCircle size={16} /> WhatsApp de Vendas
-                </a>
-              </li>
-              <li style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', marginTop: 6 }}>
-                📧 contato@tesai.com
-              </li>
-              <li style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem' }}>
-                Seg à Sex: 07:00 às 18:00 (PY/BR)
-              </li>
-            </ul>
+          <div style={{ display: 'flex', gap: 8, flex: 1, maxWidth: 460 }}>
+            <input 
+              type="email" 
+              placeholder="Digite seu melhor e-mail" 
+              style={{ flex: 1, padding: '12px 18px', borderRadius: 999, border: 'none', outline: 'none', fontSize: '0.9rem' }}
+            />
+            <button style={{ background: '#FDE047', color: '#1F2937', fontWeight: 800, border: 'none', padding: '12px 24px', borderRadius: 999, cursor: 'pointer', fontSize: '0.88rem' }}>
+              Cadastrar
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="store-footer-bottom" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 40, paddingTop: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-            © {new Date().getFullYear()} Tesãi. Todos os direitos reservados.
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#68d8d6', fontSize: '0.75rem' }}>
-            <ShieldCheck size={16} />
-            <span>Compra Segura & Envio Protegido com Código de Rastreio</span>
+      {/* 2. Main Institutional Footer (Drogaria Iguatemi style) */}
+      <div className="store-container di-footer-main">
+        <div className="di-footer-grid">
+          {/* Col 1: Brand & Bio */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, background: '#4A1D96', color: '#FFF', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.2rem' }}>
+                T
+              </div>
+              <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#4A1D96' }}>Tesãi</span>
+            </div>
+            <p style={{ fontSize: '0.84rem', color: '#6B7280', lineHeight: 1.6, marginBottom: 16 }}>
+              A <strong>Tesãi Farmácias</strong> é referência em soluções injetáveis e medicamentos de alta especialidade em Ciudad del Este (Paraguai), oferecendo logística segura com controle térmico para todo o Brasil.
+            </p>
+            <a 
+              href={waLink} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#25D366', color: '#FFF', padding: '10px 18px', borderRadius: 6, fontWeight: 700, fontSize: '0.85rem', textDecoration: 'none' }}
+            >
+              <MessageCircle size={18} /> Central WhatsApp
+            </a>
           </div>
+
+          {/* Col 2: Departamentos */}
+          <div className="di-footer-col">
+            <h4>Departamentos</h4>
+            <ul>
+              <li><a href="/loja?category=tirzepatida-tirzec">Linha Tirzec</a></li>
+              <li><a href="/loja?brand=TG">Linha TG Injetáveis</a></li>
+              <li><a href="/loja?brand=Lipoless">Linha Lipoless & Lipoland</a></li>
+              <li><a href="/loja?category=semaglutida">Linha Semaglutida</a></li>
+              <li><a href="/loja">Catálogo Completo</a></li>
+            </ul>
+          </div>
+
+          {/* Col 3: Institucional */}
+          <div className="di-footer-col">
+            <h4>Institucional</h4>
+            <ul>
+              <li><a href="/suporte">Nossa História</a></li>
+              <li><a href="/suporte">Procedência & Autenticidade</a></li>
+              <li><a href="/suporte">Controle Térmico de Envio</a></li>
+              <li><a href="/suporte">Política de Privacidade</a></li>
+              <li><a href="/suporte">Termos de Compra</a></li>
+            </ul>
+          </div>
+
+          {/* Col 4: Atendimento & Rastreio */}
+          <div className="di-footer-col">
+            <h4>Atendimento</h4>
+            <ul>
+              <li><a href="/suporte">Rastrear Meu Pedido</a></li>
+              <li><a href="/suporte">Dúvidas Frequentes (FAQ)</a></li>
+              <li><a href="/suporte">Como Comprar no Site</a></li>
+              <li><a href="/suporte">Garantia de Entrega</a></li>
+              <li><a href="/suporte">Trocas e Devoluções</a></li>
+            </ul>
+          </div>
+
+          {/* Col 5: Formas de Pagamento & Segurança */}
+          <div className="di-footer-col">
+            <h4>Segurança</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: '#065F46', background: '#ECFDF5', padding: '6px 10px', borderRadius: 4 }}>
+                <ShieldCheck size={16} /> Compra 100% Protegida
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: '#1E40AF', background: '#EFF6FF', padding: '6px 10px', borderRadius: 4 }}>
+                <Lock size={16} /> SSL 256-Bit Criptografado
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', color: '#92400E', background: '#FEF3C7', padding: '6px 10px', borderRadius: 4 }}>
+                <Award size={16} /> Lacre de Fábrica Original
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Footer Bottom Disclaimer */}
+      <div className="di-footer-bottom">
+        <div className="store-container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 16 }}>
+            <div>
+              <strong>Formas de Pagamento Aceitas:</strong> Pix (à vista com desconto), Cartão de Crédito (em até 6x sem juros), Boleto Bancário.
+            </div>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <span>© {new Date().getFullYear()} TESÃI FARMÁCIAS & IMPORTAÇÕES. Todos os direitos reservados.</span>
+            </div>
+          </div>
+
+          <p style={{ margin: 0, fontSize: '0.72rem', color: '#9CA3AF', lineHeight: 1.5 }}>
+            A Tesãi Farmácias atua em conformidade com as diretrizes de boas práticas farmacêuticas e procedência de Ciudad del Este (PY). Medicamentos sob prescrição médica devem ser acompanhados por orientação profissional. As informações contidas neste site têm caráter exclusivamente informativo.
+          </p>
         </div>
       </div>
     </footer>

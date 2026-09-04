@@ -4,61 +4,55 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { ArrowRight, Truck, Shield, CreditCard, Headphones, Loader2 } from 'lucide-react'
+import { 
+  Truck, ShieldCheck, CreditCard, Headphones, 
+  ChevronRight, ArrowRight, Star, ShoppingBag, Sparkles 
+} from 'lucide-react'
 import { useCart } from '../../src/context/CartContext'
 import { getStoreProducts, getStoreCategories } from '../../src/services/api'
 import { products as fallbackProducts, productCategories as fallbackCategories } from '../../src/data/ecommerceData'
-
-const categoryIcons = {
-  'tirzepatida-tirzec': '💉',
-  'tirzepatida-outras': '🧪',
-  'semaglutida': '🧬',
-  'medicamentos': '💊',
-  'suplementos': '⚡',
-  'dermocosmeticos': '✨',
-  'perfumes': '🧴',
-  'eletronicos': '📱',
-  'saude': '🩺',
-}
 
 const formatBRL = (v) => v?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const WHATSAPP_ADMIN = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5545991562811'
 
 export default function Home() {
-  const [featured, setFeatured] = useState([])
+  const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const { addItem } = useCart()
   const router = useRouter()
 
-  const waHeroLink = `https://wa.me/${WHATSAPP_ADMIN.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Gostaria de consultar um medicamento / injetável importado com a equipe da Tesãi.')}`
+  const waHeroLink = `https://wa.me/${WHATSAPP_ADMIN.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Gostaria de consultar a disponibilidade dos injetáveis com a equipe da Tesãi.')}`
 
   useEffect(() => {
     const load = async () => {
       try {
         const [prodRes, catRes] = await Promise.all([
-          getStoreProducts({ limit: 8, featured: true }),
+          getStoreProducts({ limit: 20 }),
           getStoreCategories(),
         ])
-        setFeatured(prodRes.products || [])
+        setProducts(prodRes.products || [])
         setCategories(catRes || [])
       } catch (err) {
         console.error('Failed to load home data, using fallback:', err)
-        const adapted = fallbackProducts.filter(p => p.destaque || p.id <= 8).map(p => ({
+        const adapted = fallbackProducts.map(p => ({
           id: p.id,
           name: p.nome,
           slug: p.slug,
-          brand: p.brand || (p.categoria?.includes('tirzec') ? 'Tirzec' : 'TG'),
+          brand: p.brand || (p.categoria?.includes('tirzec') ? 'Tirzec' : (p.nome.includes('TG') ? 'TG' : 'Linha Especial')),
           descriptionShort: p.descricaoCurta,
           isNew: p.novo,
           isFeatured: p.destaque,
+          rating: p.avaliacao || 4.9,
+          reviewCount: p.avaliacoes || 54,
+          soldCount: p.vendidos || 120,
           cover: { url: p.imagem },
           variant: {
             priceBrl: p.precoBRL,
             priceBrlOriginal: p.precoOriginalBRL,
           }
         }))
-        setFeatured(adapted)
+        setProducts(adapted)
         setCategories(fallbackCategories.filter(c => c.id !== 'todos').map(c => ({ id: c.id, name: c.nome, slug: c.id, productCount: c.count })))
       } finally {
         setLoading(false)
@@ -67,226 +61,340 @@ export default function Home() {
     load()
   }, [])
 
-  if (loading) {
-    return (
-      <div className="store-loading">
-        <Loader2 className="animate-spin" size={32} />
-        <span>Carregando Tesãi...</span>
-      </div>
-    )
-  }
-
-  const heroProduct = featured.find(p => p.isFeatured) || featured[0]
+  const tirzecList = products.filter(p => p.brand === 'Tirzec' || p.name?.includes('Tirzec')).slice(0, 4)
+  const otherTirzepatida = products.filter(p => p.name?.includes('TG') || p.name?.includes('Lipoless') || p.name?.includes('Lipoland') || p.name?.includes('Tirzedral')).slice(0, 4)
+  const semaglutidaList = products.filter(p => p.name?.includes('Delgacil') || p.name?.includes('Semaglix') || p.slug?.includes('semaglutida')).slice(0, 4)
+  const bestSellers = products.slice(0, 8)
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="store-hero" style={{ background: 'linear-gradient(135deg, #0a3d62 0%, #0077b6 100%)', color: '#fff', padding: '60px 0' }}>
+      {/* 1. Categorias Circulares em Pílula (Estilo Drogaria Iguatemi) */}
+      <section className="di-cat-bar">
         <div className="store-container">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="store-hero-badge" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)' }}>
-              🏥 Linha Especializada & Farmácia em Ciudad del Este (PY)
-            </div>
-            <h1 style={{ color: '#fff', fontSize: '2.5rem', lineHeight: 1.2, margin: '16px 0' }}>
-              Soluções Injetáveis, Tirzepatida e Semaglutida<br />com Entrega Segura em Todo o Brasil
-            </h1>
-            <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', maxWidth: 650, marginBottom: 28 }}>
-              Tesãi — Saúde e procedência direto de Ciudad del Este. Produtos 100% lacrados de fábrica, envio com controle de proteção e atendimento dedicado via WhatsApp.
-            </p>
-            <div className="store-hero-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <Link href="/loja" className="store-btn store-btn-primary store-btn-lg" style={{ background: '#25D366', color: '#fff', border: 'none', fontWeight: 700 }}>
-                Ver Catálogo Completo <ArrowRight size={18} />
-              </Link>
-              <a
-                href={waHeroLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="store-btn store-btn-secondary store-btn-lg"
-                style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', fontWeight: 600 }}
-              >
-                💬 Falar com Farmacêutico
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Trust Bar */}
-      <section className="store-container" style={{ marginTop: -20, position: 'relative', zIndex: 10 }}>
-        <div className="store-trust" style={{ background: '#fff', borderRadius: 'var(--s-radius)', boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-          <div className="store-trust-item">
-            <div className="store-trust-icon" style={{ color: '#0077b6' }}><Shield size={20} /></div>
-            <div className="store-trust-text">
-              <h4>100% Autênticos</h4>
-              <p>Procedência garantida CDE</p>
-            </div>
-          </div>
-          <div className="store-trust-item">
-            <div className="store-trust-icon" style={{ color: '#0077b6' }}><Truck size={20} /></div>
-            <div className="store-trust-text">
-              <h4>Envio Especializado</h4>
-              <p>Embalagem térmica & discreta</p>
-            </div>
-          </div>
-          <div className="store-trust-item">
-            <div className="store-trust-icon" style={{ color: '#0077b6' }}><CreditCard size={20} /></div>
-            <div className="store-trust-text">
-              <h4>Pix Instantâneo</h4>
-              <p>Aprovação e reserva imediata</p>
-            </div>
-          </div>
-          <div className="store-trust-item">
-            <div className="store-trust-icon" style={{ color: '#25D366' }}><Headphones size={20} /></div>
-            <div className="store-trust-text">
-              <h4>Suporte WhatsApp</h4>
-              <p>Atendimento direto ao cliente</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      {categories.length > 0 && (
-        <section className="store-section">
-          <div className="store-container">
-            <div className="store-section-header">
-              <div>
-                <h2 className="store-section-title">Categorias</h2>
-                <p className="store-section-subtitle">Navegue por departamento</p>
+          <div className="di-cat-scroll">
+            <Link href="/loja?category=tirzepatida-tirzec" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#EDE9FE', borderColor: '#C4B5FD' }}>
+                <span>💉</span>
               </div>
-            </div>
-            <div className="store-categories">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/loja?category=${cat.slug}`}
-                  className="store-category-card"
-                >
-                  <div className="store-category-icon">
-                    {categoryIcons[cat.slug] || '📦'}
-                  </div>
-                  <div className="store-category-name">{cat.name}</div>
-                  <div className="store-category-count">{cat.productCount} produtos</div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+              <span className="di-cat-circle-label">Linha Tirzec</span>
+            </Link>
 
-      {/* Featured Banner */}
-      {heroProduct && (
-        <section className="store-section">
-          <div className="store-container">
-            <div className="store-featured-banner" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px -15px rgba(0,0,0,0.3)', borderRadius: 20, padding: '40px 48px' }}>
-              <div>
-                <span style={{ display: 'inline-block', padding: '4px 12px', background: 'rgba(37,211,102,0.15)', color: '#25D366', borderRadius: 999, fontSize: '0.8rem', fontWeight: 600, marginBottom: 16 }}>
-                  ⭐ Destaque da Semana
-                </span>
-                <h2 style={{ fontSize: '2.2rem', fontWeight: 800, letterSpacing: '-0.03em', color: '#fff', margin: '0 0 12px' }}>
-                  {heroProduct.name}
-                </h2>
-                <p style={{ fontSize: '1.05rem', color: '#94A3B8', lineHeight: 1.6, margin: '0 0 24px', maxWidth: 500 }}>
-                  {heroProduct.descriptionShort}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 28 }}>
-                  <span style={{ fontSize: '2rem', fontWeight: 800, color: '#F8FAFC' }}>
-                    {formatBRL(heroProduct.variant?.priceBrl)}
-                  </span>
-                  {heroProduct.variant?.priceBrlOriginal && (
-                    <span style={{ fontSize: '1.1rem', textDecoration: 'line-through', color: '#64748B' }}>
-                      {formatBRL(heroProduct.variant.priceBrlOriginal)}
-                    </span>
-                  )}
-                </div>
-                <Link
-                  href={`/produto/${heroProduct.slug}`}
-                  className="store-btn store-btn-primary store-btn-lg"
-                  style={{ background: '#25D366', color: '#fff', border: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                >
-                  Ver Produto <ArrowRight size={18} />
-                </Link>
+            <Link href="/loja?brand=TG" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#E0F2FE', borderColor: '#BAE6FD' }}>
+                <span>🧪</span>
               </div>
-              <div className="store-featured-img" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <div style={{ background: '#fff', padding: '24px', borderRadius: 16, boxShadow: '0 12px 30px rgba(0,0,0,0.25)', width: '100%', maxWidth: 360, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {heroProduct.cover?.url ? (
-                    <img
-                      src={heroProduct.cover.url}
-                      alt={heroProduct.name}
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.08))' }}
-                    />
-                  ) : (
-                    <span style={{ fontSize: '4rem' }}>💊</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+              <span className="di-cat-circle-label">Linha TG</span>
+            </Link>
 
-      {/* Product Grid */}
-      <section className="store-section">
-        <div className="store-container">
-          <div className="store-section-header">
-            <div>
-              <h2 className="store-section-title">Destaques</h2>
-              <p className="store-section-subtitle">Os mais vendidos da semana</p>
-            </div>
-            <Link href="/loja" className="store-btn store-btn-secondary store-btn-sm">
-              Ver todos <ArrowRight size={14} />
+            <Link href="/loja?brand=Lipoless" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#DCFCE7', borderColor: '#BBF7D0' }}>
+                <span>🧬</span>
+              </div>
+              <span className="di-cat-circle-label">Lipoless</span>
+            </Link>
+
+            <Link href="/loja?brand=Lipoland" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#FEF3C7', borderColor: '#FDE68A' }}>
+                <span>⚡</span>
+              </div>
+              <span className="di-cat-circle-label">Lipoland</span>
+            </Link>
+
+            <Link href="/loja?category=semaglutida" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#FCE7F3', borderColor: '#FBCFE8' }}>
+                <span>💎</span>
+              </div>
+              <span className="di-cat-circle-label">Semaglutida</span>
+            </Link>
+
+            <Link href="/loja?brand=Delgacil" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#FFEDD5', borderColor: '#FED7AA' }}>
+                <span>💊</span>
+              </div>
+              <span className="di-cat-circle-label">Delgacil</span>
+            </Link>
+
+            <Link href="/loja?brand=Gluconex" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#F3E8FF', borderColor: '#E9D5FF' }}>
+                <span>🩺</span>
+              </div>
+              <span className="di-cat-circle-label">Gluconex</span>
+            </Link>
+
+            <Link href="/loja" className="di-cat-circle-item">
+              <div className="di-cat-circle-img" style={{ background: '#F1F5F9', borderColor: '#E2E8F0' }}>
+                <span>🏪</span>
+              </div>
+              <span className="di-cat-circle-label">Ver Todas</span>
             </Link>
           </div>
-          <div className="store-product-grid">
-            {featured.map((product, i) => {
-              const v = product.variant
-              const discount = v?.priceBrlOriginal
-                ? Math.round((1 - v.priceBrl / v.priceBrlOriginal) * 100)
-                : 0
+        </div>
+      </section>
+
+      <div className="store-container">
+        {/* 2. Banner Editorial Principal (Drogaria Iguatemi Conceito) */}
+        <div className="di-hero-banner" style={{ marginTop: 28 }}>
+          <div className="di-hero-content">
+            <span className="di-hero-tag">
+              <Sparkles size={14} /> Tesãi Linha Especializada
+            </span>
+            <h1 className="di-hero-title">
+              Sua saúde e vitalidade em um espaço premium
+            </h1>
+            <p className="di-hero-desc">
+              Tirzepatida (Tirzec, TG, Lipoless) e Semaglutida importadas com procedência de Ciudad del Este. Armazenamento sob refrigeração e entrega garantida para todo o Brasil.
+            </p>
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+              <Link href="/loja" className="di-hero-btn">
+                Explorar Catálogo Completo <ArrowRight size={16} />
+              </Link>
+              <a 
+                href={waHeroLink} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="di-hero-btn" 
+                style={{ background: '#25D366', color: '#FFFFFF' }}
+              >
+                Falar com Farmacêutico 💬
+              </a>
+            </div>
+          </div>
+
+          <div className="di-hero-card-preview hide-mobile">
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#16A34A', background: '#DCFCE7', padding: '4px 10px', borderRadius: 20 }}>
+              DESTAQUE DA SEMANA
+            </span>
+            <img 
+              src="/products/tirzec-15mg-md-multidose.webp" 
+              alt="Tirzec 15mg Multidose" 
+              style={{ width: '100%', height: 180, objectFit: 'contain', margin: '14px 0' }}
+            />
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 6px' }}>Tirzec 15 mg Multidose</h4>
+            <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#4A1D96' }}>R$ 780,00 <small style={{ fontSize: '0.75rem', color: '#16A34A' }}>no Pix</small></div>
+            <Link href="/produto/tirzec-15mg-md-multidose" style={{ display: 'block', marginTop: 12, background: '#4A1D96', color: '#FFF', padding: '8px', borderRadius: 6, textDecoration: 'none', fontWeight: 700, fontSize: '0.85rem' }}>
+              Ver Detalhes do Produto
+            </Link>
+          </div>
+        </div>
+
+        {/* 3. Barra de Benefícios e Confiança */}
+        <div className="di-benefits-bar">
+          <div className="di-benefit-item">
+            <div className="di-benefit-icon"><Truck size={22} /></div>
+            <div className="di-benefit-info">
+              <h4>Envio com Rastreio</h4>
+              <p>Postagem rápida CDE ➔ Brasil</p>
+            </div>
+          </div>
+          <div className="di-benefit-item">
+            <div className="di-benefit-icon"><ShieldCheck size={22} /></div>
+            <div className="di-benefit-info">
+              <h4>100% Lacrado de Fábrica</h4>
+              <p>Procedência e pureza garantida</p>
+            </div>
+          </div>
+          <div className="di-benefit-item">
+            <div className="di-benefit-icon"><CreditCard size={22} /></div>
+            <div className="di-benefit-info">
+              <h4>Pix com Desconto</h4>
+              <p>Ou parcele no cartão de crédito</p>
+            </div>
+          </div>
+          <div className="di-benefit-item">
+            <div className="di-benefit-icon"><Headphones size={22} /></div>
+            <div className="di-benefit-info">
+              <h4>Suporte no WhatsApp</h4>
+              <p>Atendimento humanizado</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Vitrine: Lançamentos da Semana (Linha Tirzec) */}
+        <section style={{ margin: '48px 0 24px' }}>
+          <div className="di-section-header">
+            <h2 className="di-section-title">
+              <span>💉</span> Linha Tirzepatida • Tirzec
+            </h2>
+            <Link href="/loja?category=tirzepatida-tirzec" className="di-section-link">
+              Ver todos <ChevronRight size={16} />
+            </Link>
+          </div>
+
+          <div className="di-product-grid">
+            {tirzecList.map(p => {
+              const price = p.variant?.priceBrl || 550
+              const original = p.variant?.priceBrlOriginal || price * 1.3
+              const installment = (price / 6).toFixed(2)
+              const rating = p.rating || 4.9
+              const reviews = p.reviewCount || 48
 
               return (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06, duration: 0.4 }}
-                >
-                  <Link href={`/produto/${product.slug}`} className="store-card">
-                    <div className="store-card-img">
-                      {product.cover?.url
-                        ? <img src={product.cover.url} alt={product.name} />
-                        : <span className="store-card-img-placeholder">📦</span>
-                      }
-                      {discount > 0 && (
-                        <span className="store-card-badge sale">-{discount}%</span>
-                      )}
-                      {product.isNew && (
-                        <span className="store-card-badge new" style={discount > 0 ? { top: 38 } : {}}>
-                          Novo
-                        </span>
-                      )}
+                <div key={p.id} className="di-card">
+                  <div className="di-card-badges">
+                    <span className="di-badge-tag purple">TIRZEC</span>
+                    <span className="di-badge-tag discount">100% LACRADO</span>
+                  </div>
+
+                  <Link href={`/produto/${p.slug}`} className="di-card-img-wrap">
+                    <img src={p.cover?.url || '/products/tirzec-2-5mg-frasco-ampola.webp'} alt={p.name} />
+                  </Link>
+
+                  <div className="di-delivery-tag">
+                    <Truck size={13} />
+                    <span>RECEBA COM SEGURANÇA NO BRASIL</span>
+                  </div>
+
+                  <div className="di-card-body">
+                    <span className="di-card-brand">{p.brand || 'Tirzec'}</span>
+                    <Link href={`/produto/${p.slug}`} style={{ textDecoration: 'none' }}>
+                      <h3 className="di-card-title">{p.name}</h3>
+                    </Link>
+
+                    {/* Rating */}
+                    <div className="di-rating">
+                      <span className="di-stars">★★★★★</span>
+                      <span className="di-rating-count">({reviews})</span>
                     </div>
-                    <div className="store-card-body">
-                      <span className="store-card-brand">{product.brand}</span>
-                      <span className="store-card-name">{product.name}</span>
-                      <div className="store-card-prices">
-                        <span className="store-card-price">{formatBRL(v?.priceBrl)}</span>
-                        {v?.priceBrlOriginal && (
-                          <span className="store-card-price-old">{formatBRL(v.priceBrlOriginal)}</span>
-                        )}
+
+                    {/* Pricing */}
+                    <div className="di-pricing">
+                      <div className="di-price-original">{formatBRL(original)}</div>
+                      <div className="di-price-pix">
+                        <span className="di-price-val">{formatBRL(price)}</span>
+                        <span className="di-pix-badge">no pix</span>
+                      </div>
+                      <div className="di-price-installment">
+                        ou 6x de {formatBRL(price / 6)} no cartão
                       </div>
                     </div>
-                  </Link>
-                </motion.div>
+
+                    <button 
+                      className="di-buy-btn"
+                      onClick={() => addItem({
+                        id: p.id,
+                        name: p.name,
+                        price: price,
+                        image: p.cover?.url,
+                        quantity: 1
+                      })}
+                    >
+                      <ShoppingBag size={16} /> Comprar
+                    </button>
+                  </div>
+                </div>
               )
             })}
           </div>
+        </section>
+
+        {/* 5. Mosaico de Banners de Categoria (Estilo Iguatemi) */}
+        <div className="di-mosaic-grid">
+          <Link href="/loja?category=tirzepatida-tirzec" className="di-mosaic-card" style={{ background: 'linear-gradient(135deg, #4A1D96 0%, #311068 100%)' }}>
+            <div>
+              <h3>Tirzec Completo</h3>
+              <p>Frascos de 2,5mg a 15mg e Canetas</p>
+            </div>
+            <span className="di-mosaic-btn">Conhecer Linha <ArrowRight size={14} /></span>
+          </Link>
+
+          <Link href="/loja?brand=TG" className="di-mosaic-card" style={{ background: 'linear-gradient(135deg, #0284C7 0%, #0369A1 100%)' }}>
+            <div>
+              <h3>Linha TG Especial</h3>
+              <p>Soluções Injetáveis de Alta Concentração</p>
+            </div>
+            <span className="di-mosaic-btn">Explorar TG <ArrowRight size={14} /></span>
+          </Link>
+
+          <Link href="/loja?brand=Lipoless" className="di-mosaic-card" style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }}>
+            <div>
+              <h3>Lipoless & Lipoland</h3>
+              <p>Multidose e Caixas Ampolas Lacradas</p>
+            </div>
+            <span className="di-mosaic-btn">Ver Opções <ArrowRight size={14} /></span>
+          </Link>
+
+          <Link href="/loja?category=semaglutida" className="di-mosaic-card" style={{ background: 'linear-gradient(135deg, #DB2777 0%, #BE185D 100%)' }}>
+            <div>
+              <h3>Semaglutida</h3>
+              <p>Delgacil e Semaglix com Desconto</p>
+            </div>
+            <span className="di-mosaic-btn">Comprar Semaglutida <ArrowRight size={14} /></span>
+          </Link>
         </div>
-      </section>
+
+        {/* 6. Vitrine: Os Campeões de Vendas */}
+        <section style={{ margin: '48px 0' }}>
+          <div className="di-section-header">
+            <h2 className="di-section-title">
+              <span>🏆</span> Os Campeões de Vendas
+            </h2>
+            <Link href="/loja" className="di-section-link">
+              Ver catálogo completo <ChevronRight size={16} />
+            </Link>
+          </div>
+
+          <div className="di-product-grid">
+            {bestSellers.map(p => {
+              const price = p.variant?.priceBrl || 650
+              const original = p.variant?.priceBrlOriginal || price * 1.25
+              const reviews = p.reviewCount || 62
+
+              return (
+                <div key={p.id} className="di-card">
+                  <div className="di-card-badges">
+                    <span className="di-badge-tag green">MAIS VENDIDO</span>
+                  </div>
+
+                  <Link href={`/produto/${p.slug}`} className="di-card-img-wrap">
+                    <img src={p.cover?.url} alt={p.name} />
+                  </Link>
+
+                  <div className="di-delivery-tag">
+                    <Truck size={13} />
+                    <span>POSTAGEM RÁPIDA • ENVIO SEGURO</span>
+                  </div>
+
+                  <div className="di-card-body">
+                    <span className="di-card-brand">{p.brand}</span>
+                    <Link href={`/produto/${p.slug}`} style={{ textDecoration: 'none' }}>
+                      <h3 className="di-card-title">{p.name}</h3>
+                    </Link>
+
+                    <div className="di-rating">
+                      <span className="di-stars">★★★★★</span>
+                      <span className="di-rating-count">({reviews})</span>
+                    </div>
+
+                    <div className="di-pricing">
+                      <div className="di-price-original">{formatBRL(original)}</div>
+                      <div className="di-price-pix">
+                        <span className="di-price-val">{formatBRL(price)}</span>
+                        <span className="di-pix-badge">no pix</span>
+                      </div>
+                      <div className="di-price-installment">
+                        ou 6x de {formatBRL(price / 6)} no cartão
+                      </div>
+                    </div>
+
+                    <button 
+                      className="di-buy-btn"
+                      onClick={() => addItem({
+                        id: p.id,
+                        name: p.name,
+                        price: price,
+                        image: p.cover?.url,
+                        quantity: 1
+                      })}
+                    >
+                      <ShoppingBag size={16} /> Comprar
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      </div>
     </>
   )
 }
