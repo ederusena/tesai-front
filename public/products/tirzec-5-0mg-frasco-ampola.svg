@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f0fdf4" />
+      <stop offset="100%" stop-color="#e0f2fe" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="15" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="glow"/>
+      <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="600" rx="32" fill="url(#bgGrad)" />
+  <circle cx="500" cy="100" r="180" fill="#38bdf8" opacity="0.15" />
+  <circle cx="100" cy="520" r="140" fill="#0284c7" opacity="0.1" />
+
+  <!-- Grid decoration pattern -->
+  <g opacity="0.05" stroke="#000" stroke-width="1">
+    <line x1="0" y1="150" x2="600" y2="150" />
+    <line x1="0" y1="300" x2="600" y2="300" />
+    <line x1="0" y1="450" x2="600" y2="450" />
+    <line x1="150" y1="0" x2="150" y2="600" />
+    <line x1="300" y1="0" x2="300" y2="600" />
+    <line x1="450" y1="0" x2="450" y2="600" />
+  </g>
+
+  <!-- Product Box Container -->
+  <g filter="url(#shadow)">
+    <!-- Box Shadow / Base -->
+    <rect x="130" y="80" width="340" height="440" rx="20" fill="url(#cardGrad)" stroke="#e2e8f0" stroke-width="2"/>
+    
+    <!-- Top Brand Header Banner -->
+    <rect x="130" y="80" width="340" height="110" rx="20" fill="url(#primaryGrad)"/>
+    <rect x="130" y="165" width="340" height="25" fill="url(#primaryGrad)"/>
+
+    <!-- Lab Badge -->
+    <rect x="155" y="102" width="130" height="26" rx="13" fill="rgba(255,255,255,0.2)"/>
+    <text x="220" y="119" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="1">TIRZEC PHARMA</text>
+
+    <!-- Main Medicine Name -->
+    <text x="155" y="156" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" fill="#ffffff" letter-spacing="-0.5">TIRZEC</text>
+
+    <!-- Badge Injetavel -->
+    <rect x="155" y="210" width="170" height="22" rx="6" fill="#f1f5f9"/>
+    <text x="240" y="225" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="700" fill="#475569" text-anchor="middle" letter-spacing="0.5">SOLUÇÃO INJETÁVEL</text>
+
+    <!-- Center Dose Callout -->
+    <rect x="155" y="245" width="290" height="85" rx="14" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1.5"/>
+    <text x="175" y="280" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="600" fill="#64748b">Concentração:</text>
+    <text x="175" y="315" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="30" font-weight="900" fill="#0284c7">5.0 mg</text>
+    <circle cx="410" cy="287" r="22" fill="#38bdf8" opacity="0.2"/>
+    <path d="M404 287 L409 292 L418 281" stroke="#0284c7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+    <!-- Subtitle / Presentation Info -->
+    <text x="155" y="360" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#1e293b">Frasco / Ampola</text>
+    <text x="155" y="380" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="500" fill="#64748b">Uso Subcutâneo • Procedência CDE</text>
+
+    <!-- Security & Authenticity Seal -->
+    <g transform="translate(155, 415)">
+      <rect width="290" height="42" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <!-- Lock / Shield icon -->
+      <circle cx="24" cy="21" r="13" fill="#ecfdf5"/>
+      <path d="M20 21 L23 24 L29 17" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <text x="46" y="19" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" fill="#0f172a">100% LACRADO DE FÁBRICA</text>
+      <text x="46" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="500" fill="#10b981">Garantia &amp; Procedência Direta CDE</text>
+    </g>
+
+    <!-- Holographic Barcode Bottom -->
+    <g transform="translate(155, 475)">
+      <rect width="290" height="24" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+      <line x1="15" y1="4" x2="15" y2="20" stroke="#334155" stroke-width="2"/>
+      <line x1="22" y1="4" x2="22" y2="20" stroke="#334155" stroke-width="4"/>
+      <line x1="30" y1="4" x2="30" y2="20" stroke="#334155" stroke-width="1"/>
+      <line x1="35" y1="4" x2="35" y2="20" stroke="#334155" stroke-width="3"/>
+      <line x1="44" y1="4" x2="44" y2="20" stroke="#334155" stroke-width="2"/>
+      <line x1="52" y1="4" x2="52" y2="20" stroke="#334155" stroke-width="5"/>
+      <line x1="62" y1="4" x2="62" y2="20" stroke="#334155" stroke-width="2"/>
+      <line x1="70" y1="4" x2="70" y2="20" stroke="#334155" stroke-width="3"/>
+      <line x1="80" y1="4" x2="80" y2="20" stroke="#334155" stroke-width="1"/>
+      <text x="270" y="16" font-family="monospace" font-size="9" font-weight="700" fill="#64748b" text-anchor="end">LOT: 2026/09-PY</text>
+    </g>
+  </g>
+</svg>
