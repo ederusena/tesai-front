@@ -16,11 +16,14 @@ const outfit = Outfit({
 
 export const metadata = {
   title: {
-    default: 'Spark Vendas — Central de Comando Cross-Border',
-    template: '%s | Spark Vendas'
+    default: 'Tesãi Farmácias — Medicamentos & Injetáveis Especializados',
+    template: '%s | Tesãi Farmácias'
   },
-  description: 'Spark Vendas Cross-Border — Plataforma omnichannel para vendas do Paraguai ao Brasil. Centralize anúncios, automatize WhatsApp e escale seu faturamento.',
+  description: 'Tesãi Farmácias — Linha especializada em Tirzepatida (Tirzec, TG, Lipoless), Semaglutida e injetáveis com procedência de Ciudad del Este e entrega segura em todo o Brasil.',
   metadataBase: new URL('http://localhost:3000'),
+  icons: {
+    icon: '/favicon.svg',
+  },
   robots: {
     index: true,
     follow: true,
