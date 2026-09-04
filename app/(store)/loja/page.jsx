@@ -4,13 +4,15 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Search, Loader2, SlidersHorizontal, ShoppingBag } from 'lucide-react'
+import { Search, Loader2, SlidersHorizontal, ShoppingBag, Truck, Star } from 'lucide-react'
 import { getStoreProducts, getStoreCategories, getStoreBrands } from '../../../src/services/api'
 import { products as fallbackProducts, productCategories as fallbackCategories } from '../../../src/data/ecommerceData'
+import { useCart } from '../../../src/context/CartContext'
 
 const formatBRL = (v) => v?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
 function LojaContent() {
+  const { addItem } = useCart()
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [brands, setBrands] = useState([])
@@ -33,7 +35,7 @@ function LojaContent() {
       try {
         const prodRes = await getStoreProducts({
           page,
-          limit: 12,
+          limit: 20,
           category: activeCategory,
           brand: activeBrand,
           search: searchQuery,
@@ -49,13 +51,12 @@ function LojaContent() {
         setBrands(brandRes || [])
       } catch (err) {
         console.error('API Store Error, using fallback data:', err)
-        // Fallback local caso o backend esteja temporariamente indisponível
         let filtered = [...fallbackProducts]
         if (activeCategory) {
           filtered = filtered.filter(p => p.categoria === activeCategory)
         }
         if (activeBrand) {
-          filtered = filtered.filter(p => p.brand?.toLowerCase() === activeBrand.toLowerCase() || p.tags?.includes(activeBrand.toLowerCase()))
+          filtered = filtered.filter(p => p.brand?.toLowerCase() === activeBrand.toLowerCase() || p.tags?.includes(activeBrand.toLowerCase()) || p.nome?.toLowerCase().includes(activeBrand.toLowerCase()))
         }
         if (searchQuery) {
           const q = searchQuery.toLowerCase()
@@ -66,10 +67,12 @@ function LojaContent() {
           id: p.id,
           name: p.nome,
           slug: p.slug,
-          brand: p.brand || (p.categoria?.includes('tirzec') ? 'Tirzec' : 'TG'),
+          brand: p.brand || (p.categoria?.includes('tirzec') ? 'Tirzec' : (p.nome.includes('TG') ? 'TG' : 'Linha Especial')),
           descriptionShort: p.descricaoCurta,
           isNew: p.novo,
           isFeatured: p.destaque,
+          rating: p.avaliacao || 4.9,
+          reviewCount: p.avaliacoes || 54,
           cover: { url: p.imagem },
           variant: {
             priceBrl: p.precoBRL,
@@ -80,7 +83,7 @@ function LojaContent() {
         setProducts(adapted)
         setTotal(adapted.length)
         setPages(Math.ceil(adapted.length / 12) || 1)
-        setCategories(fallbackCategories.map(c => ({ id: c.id, name: c.nome, slug: c.id, productCount: c.count })))
+        setCategories(fallbackCategories.filter(c => c.id !== 'todos').map(c => ({ id: c.id, name: c.nome, slug: c.id, productCount: c.count })))
         setBrands([
           { name: 'Tirzec', productCount: 8 },
           { name: 'TG', productCount: 5 },
@@ -122,180 +125,206 @@ function LojaContent() {
     setPage(1)
   }
 
-  const handleSearch = (e) => {
-    const q = e.target.value
-    const params = new URLSearchParams(searchParams)
-    if (q) {
-      params.set('search', q)
-    } else {
-      params.delete('search')
-    }
-    router.push(`${pathname}?${params.toString()}`)
-    setPage(1)
-  }
-
   return (
-    <div className="store-container">
-      <div className="store-catalog-layout">
-        {/* Filter Panel */}
-        <aside className="store-filter-panel">
-          <div className="store-search-bar">
-            <Search size={16} style={{ color: 'var(--s-text-muted)', flexShrink: 0 }} />
-            <input
-              type="text"
-              placeholder="Buscar produtos..."
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-          </div>
+    <div style={{ background: '#FAF8F5', minHeight: '85vh', padding: '30px 0 60px' }}>
+      <div className="store-container">
+        
+        {/* Breadcrumb */}
+        <div style={{ fontSize: '0.82rem', color: '#6B7280', marginBottom: 20, display: 'flex', gap: 6 }}>
+          <Link href="/" style={{ color: '#4B5563', textDecoration: 'none' }}>Início</Link>
+          <span>/</span>
+          <span style={{ color: '#4A1D96', fontWeight: 700 }}>Catálogo de Medicamentos</span>
+        </div>
 
-          {/* Categorias */}
-          <div className="store-filter-title">
-            <SlidersHorizontal size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-            Categorias
-          </div>
-          <div className="store-filter-list">
-            <button
-              className={`store-filter-item ${!activeCategory && !activeBrand ? 'active' : ''}`}
-              onClick={() => {
-                const params = new URLSearchParams(searchParams)
-                params.delete('category')
-                params.delete('brand')
-                params.delete('search')
-                router.push(`${pathname}?${params.toString()}`)
-              }}
-            >
-              <span>Todos</span>
-              <span className="store-filter-count">{total}</span>
-            </button>
-            {categories.filter(c => c.productCount > 0).map((cat) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 32, alignItems: 'start' }}>
+          
+          {/* Sidebar de Filtros (Drogaria Iguatemi) */}
+          <aside style={{ background: '#FFFFFF', borderRadius: 12, padding: '24px', border: '1px solid var(--di-border)', boxShadow: 'var(--di-shadow-xs)' }}>
+            
+            {/* Categorias */}
+            <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#4A1D96', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Departamentos
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <button
-                key={cat.id}
-                className={`store-filter-item ${activeCategory === cat.slug ? 'active' : ''}`}
-                onClick={() => setCategory(cat.slug)}
+                style={{
+                  textAlign: 'left',
+                  background: !activeCategory && !activeBrand ? '#F3EEFB' : 'transparent',
+                  color: !activeCategory && !activeBrand ? '#4A1D96' : '#4B5563',
+                  fontWeight: !activeCategory && !activeBrand ? 700 : 500,
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  display: 'flex',
+                  justifyContent: 'space-between'
+                }}
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams)
+                  params.delete('category')
+                  params.delete('brand')
+                  params.delete('search')
+                  router.push(`${pathname}?${params.toString()}`)
+                }}
               >
-                <span>{cat.name}</span>
-                <span className="store-filter-count">{cat.productCount}</span>
+                <span>Todos os Produtos</span>
+                <span>({total})</span>
               </button>
-            ))}
-          </div>
 
-          {/* Laboratórios & Marcas */}
-          {brands.length > 0 && (
-            <>
-              <div className="store-filter-title" style={{ marginTop: 24 }}>
-                <SlidersHorizontal size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  style={{
+                    textAlign: 'left',
+                    background: activeCategory === cat.slug ? '#F3EEFB' : 'transparent',
+                    color: activeCategory === cat.slug ? '#4A1D96' : '#4B5563',
+                    fontWeight: activeCategory === cat.slug ? 700 : 500,
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}
+                  onClick={() => setCategory(cat.slug)}
+                >
+                  <span>{cat.name}</span>
+                  <span>({cat.productCount || 0})</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Marcas & Laboratórios */}
+            <div style={{ borderTop: '1px solid #F0EDE8', marginTop: 24, paddingTop: 20 }}>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 800, color: '#4A1D96', margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Laboratórios & Linhas
-              </div>
-              <div className="store-filter-list">
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {brands.map((b) => (
                   <button
                     key={b.name}
-                    className={`store-filter-item ${activeBrand === b.name ? 'active' : ''}`}
+                    style={{
+                      textAlign: 'left',
+                      background: activeBrand.toLowerCase() === b.name.toLowerCase() ? '#F3EEFB' : 'transparent',
+                      color: activeBrand.toLowerCase() === b.name.toLowerCase() ? '#4A1D96' : '#4B5563',
+                      fontWeight: activeBrand.toLowerCase() === b.name.toLowerCase() ? 700 : 500,
+                      border: 'none',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontSize: '0.85rem',
+                      display: 'flex',
+                      justifyContent: 'space-between'
+                    }}
                     onClick={() => setBrand(activeBrand === b.name ? '' : b.name)}
                   >
                     <span>{b.name}</span>
-                    <span className="store-filter-count">{b.productCount}</span>
+                    <span>({b.productCount || 0})</span>
                   </button>
                 ))}
               </div>
-            </>
-          )}
-        </aside>
-
-        {/* Product Grid */}
-        <div>
-          {/* Results count */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', margin: 0 }}>
-              {activeBrand
-                ? `Linha ${activeBrand}`
-                : activeCategory
-                  ? categories.find(c => c.slug === activeCategory)?.name || 'Categoria'
-                  : searchQuery
-                    ? `Resultados para "${searchQuery}"`
-                    : 'Todos os Produtos'}
-            </h1>
-            <span style={{ fontSize: '0.85rem', color: 'var(--s-text-muted)' }}>
-              {total} {total === 1 ? 'produto' : 'produtos'}
-            </span>
-          </div>
-
-          {loading ? (
-            <div className="store-loading">
-              <Loader2 className="animate-spin" size={32} />
-              <span>Carregando produtos...</span>
             </div>
-          ) : products.length === 0 ? (
-            <div className="store-empty">
-              <ShoppingBag size={48} />
-              <h3>Nenhum produto encontrado</h3>
-              <p>Tente mudar o filtro ou buscar por outro termo.</p>
+
+          </aside>
+
+          {/* Grid de Produtos (Drogaria Iguatemi) */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--di-text)', margin: 0 }}>
+                {activeBrand 
+                  ? `Linha ${activeBrand}` 
+                  : activeCategory 
+                    ? categories.find(c => c.slug === activeCategory)?.name || 'Categoria' 
+                    : searchQuery 
+                      ? `Resultados para "${searchQuery}"` 
+                      : 'Todos os Medicamentos'}
+              </h1>
+              <span style={{ fontSize: '0.85rem', color: '#6B7280' }}>
+                Exibindo <strong>{products.length}</strong> produtos
+              </span>
             </div>
-          ) : (
-            <>
-              <div className="store-product-grid">
-                {products.map((product, i) => {
+
+            {loading ? (
+              <div style={{ padding: '80px 0', textAlign: 'center', color: '#4A1D96' }}>
+                <Loader2 className="animate-spin" size={36} style={{ margin: '0 auto 12px' }} />
+                <span style={{ fontWeight: 600 }}>Carregando catálogo...</span>
+              </div>
+            ) : products.length === 0 ? (
+              <div style={{ background: '#FFF', padding: '60px', borderRadius: 12, textAlign: 'center', border: '1px solid var(--di-border)' }}>
+                <ShoppingBag size={40} color="#9CA3AF" style={{ margin: '0 auto 12px' }} />
+                <h3>Nenhum produto encontrado</h3>
+                <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>Tente selecionar outro laboratório ou limpar a busca.</p>
+              </div>
+            ) : (
+              <div className="di-product-grid">
+                {products.map((product) => {
                   const v = product.variant
-                  const discount = v?.priceBrlOriginal
-                    ? Math.round((1 - v.priceBrl / v.priceBrlOriginal) * 100)
-                    : 0
+                  const price = v?.priceBrl || 550
+                  const original = v?.priceBrlOriginal || price * 1.3
+                  const reviews = product.reviewCount || 64
 
                   return (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04, duration: 0.35 }}
-                    >
-                      <Link href={`/produto/${product.slug}`} className="store-card">
-                        <div className="store-card-img">
-                          {product.cover?.url
-                            ? <img src={product.cover.url} alt={product.name} />
-                            : <span className="store-card-img-placeholder">📦</span>
-                          }
-                          {discount > 0 && (
-                            <span className="store-card-badge sale">-{discount}%</span>
-                          )}
-                          {product.isNew && (
-                            <span className="store-card-badge new" style={discount > 0 ? { top: 38 } : {}}>
-                              Novo
-                            </span>
-                          )}
+                    <div key={product.id} className="di-card">
+                      <div className="di-card-badges">
+                        <span className="di-badge-tag purple">{product.brand || 'LINHA'}</span>
+                        <span className="di-badge-tag discount">100% LACRADO</span>
+                      </div>
+
+                      <Link href={`/produto/${product.slug}`} className="di-card-img-wrap">
+                        <img src={product.cover?.url || '/products/tirzec-2-5mg-frasco-ampola.webp'} alt={product.name} />
+                      </Link>
+
+                      <div className="di-delivery-tag">
+                        <Truck size={13} />
+                        <span>RECEBA COM SEGURANÇA NO BRASIL</span>
+                      </div>
+
+                      <div className="di-card-body">
+                        <span className="di-card-brand">{product.brand}</span>
+                        <Link href={`/produto/${product.slug}`} style={{ textDecoration: 'none' }}>
+                          <h3 className="di-card-title">{product.name}</h3>
+                        </Link>
+
+                        <div className="di-rating">
+                          <span className="di-stars">★★★★★</span>
+                          <span className="di-rating-count">({reviews})</span>
                         </div>
-                        <div className="store-card-body">
-                          <span className="store-card-brand">{product.brand}</span>
-                          <span className="store-card-name">{product.name}</span>
-                          <div className="store-card-prices">
-                            <span className="store-card-price">{formatBRL(v?.priceBrl)}</span>
-                            {v?.priceBrlOriginal && (
-                              <span className="store-card-price-old">{formatBRL(v.priceBrlOriginal)}</span>
-                            )}
+
+                        <div className="di-pricing">
+                          <div className="di-price-original">{formatBRL(original)}</div>
+                          <div className="di-price-pix">
+                            <span className="di-price-val">{formatBRL(price)}</span>
+                            <span className="di-pix-badge">no pix</span>
+                          </div>
+                          <div className="di-price-installment">
+                            ou 6x de {formatBRL(price / 6)} no cartão
                           </div>
                         </div>
-                      </Link>
-                    </motion.div>
+
+                        <button 
+                          className="di-buy-btn"
+                          onClick={() => addItem({
+                            id: product.id,
+                            name: product.name,
+                            price: price,
+                            image: product.cover?.url,
+                            quantity: 1
+                          })}
+                        >
+                          <ShoppingBag size={16} /> Comprar
+                        </button>
+                      </div>
+                    </div>
                   )
                 })}
               </div>
+            )}
+          </div>
 
-              {/* Pagination */}
-              {pages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 40 }}>
-                  {Array.from({ length: pages }, (_, i) => (
-                    <button
-                      key={i + 1}
-                      onClick={() => setPage(i + 1)}
-                      className={`store-btn store-btn-sm ${page === i + 1 ? 'store-btn-primary' : 'store-btn-secondary'}`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
         </div>
+
       </div>
     </div>
   )
@@ -304,9 +333,9 @@ function LojaContent() {
 export default function Loja() {
   return (
     <Suspense fallback={
-      <div className="store-loading">
-        <Loader2 className="animate-spin" size={32} />
-        <span>Carregando loja...</span>
+      <div style={{ padding: '100px 0', textAlign: 'center' }}>
+        <Loader2 className="animate-spin" size={36} color="#4A1D96" style={{ margin: '0 auto 12px' }} />
+        <span>Carregando catálogo Tesãi...</span>
       </div>
     }>
       <LojaContent />
