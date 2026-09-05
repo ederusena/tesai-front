@@ -1170,3 +1170,515 @@
   color: var(--di-text-muted);
   line-height: 1.6;
 }
+
+/* =====================================================
+   AMAZON-STYLE "YOUR ACCOUNT" DROPDOWN & USER TRIGGER
+   ===================================================== */
+.amazon-user-wrapper {
+  position: relative;
+}
+
+.di-user-trigger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--di-radius-sm);
+  transition: background var(--di-transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFFFFF;
+}
+
+.di-user-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.di-user-avatar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.amazon-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: -60px;
+  width: 480px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(42, 13, 84, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  color: #242424;
+  z-index: 1000;
+  overflow: hidden;
+  animation: amazonFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes amazonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.amazon-panel-header {
+  padding: 18px 20px;
+  background: #FBF8F5;
+  border-bottom: 1px solid var(--di-border);
+}
+
+.amazon-user-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.amazon-avatar-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--di-purple);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(74, 29, 150, 0.3);
+}
+
+.amazon-user-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+
+.amazon-user-email {
+  font-size: 0.78rem;
+  color: var(--di-text-muted);
+  margin-top: 1px;
+}
+
+.amazon-role-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 6px;
+}
+
+.amazon-role-tag.admin {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.amazon-role-tag.operator {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+}
+
+.amazon-role-tag.customer {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.amazon-guest-login {
+  text-align: center;
+}
+
+.amazon-guest-text {
+  font-size: 0.84rem;
+  color: var(--di-text-secondary);
+  margin-bottom: 12px;
+}
+
+.amazon-login-btn {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #4A1D96 0%, #37146D 100%);
+  color: #FFFFFF !important;
+  text-decoration: none !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 11px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(74, 29, 150, 0.25);
+  transition: all 0.2s;
+}
+
+.amazon-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(74, 29, 150, 0.35);
+}
+
+.amazon-signup-hint {
+  font-size: 0.76rem;
+  color: var(--di-text-muted);
+  margin-top: 8px;
+}
+
+.amazon-signup-hint a {
+  color: var(--di-purple);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* CARDS EM GRID ESTILO AMAZON */
+.amazon-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  background: #FFFFFF;
+}
+
+.amazon-grid-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--di-border);
+  border-radius: 12px;
+  text-decoration: none !important;
+  color: inherit;
+  transition: all 0.2s ease;
+  background: #FFFFFF;
+}
+
+.amazon-grid-card:hover {
+  border-color: var(--di-purple-light);
+  background: #FAF8F5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.amazon-grid-card.highlighted {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #F3EEFB 0%, #FFFFFF 100%);
+  border: 1.5px solid var(--di-purple-border);
+}
+
+.amazon-grid-card.highlighted:hover {
+  border-color: var(--di-purple);
+  box-shadow: 0 6px 18px rgba(74, 29, 150, 0.12);
+}
+
+.amazon-grid-card.disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.amazon-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.amazon-card-icon.purple {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+
+.amazon-card-icon.green {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.amazon-card-icon.teal {
+  background: #CCFBF1;
+  color: #0F766E;
+}
+
+.amazon-card-icon.blue {
+  background: #E0F2FE;
+  color: #0369A1;
+}
+
+.amazon-card-icon.gray {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.amazon-card-content {
+  flex: 1;
+}
+
+.amazon-card-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1F2937;
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.amazon-card-desc {
+  font-size: 0.74rem;
+  color: var(--di-text-muted);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.amazon-panel-footer {
+  padding: 12px 16px;
+  background: #F9FAFB;
+  border-top: 1px solid var(--di-border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.amazon-logout-btn {
+  background: none;
+  border: 1px solid var(--di-border);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #EF4444;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.amazon-logout-btn:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
+/* =====================================================
+   STORE LOGIN PAGE (PADRÃO DROGARIA IGUATEMI / TESÃI)
+   ===================================================== */
+.store-login-wrapper {
+  background: #FBF8F5;
+  min-height: calc(100vh - 250px);
+}
+
+.store-login-card {
+  width: 100%;
+  max-width: 440px;
+  background: #FFFFFF;
+  border: 1px solid var(--di-border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  box-shadow: 0 12px 36px rgba(42, 13, 84, 0.08);
+}
+
+.store-login-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.store-login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #EDE9FE;
+  color: #6D28D9;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.store-login-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1E1B4B;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.02em;
+}
+
+.store-login-subtitle {
+  font-size: 0.84rem;
+  color: var(--di-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.store-login-error {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #B91C1C;
+  font-size: 0.82rem;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.store-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.store-input-group label {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.store-forgot-link {
+  font-size: 0.78rem;
+  color: var(--di-purple);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.store-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.store-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.store-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+.store-input-box input {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px 0 42px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #111827;
+  background: #FAFAFA;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.store-input-box input:focus {
+  border-color: var(--di-purple);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(74, 29, 150, 0.12);
+}
+
+.store-login-submit-btn {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #4A1D96 0%, #37146D 100%);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.94rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-top: 6px;
+  box-shadow: 0 6px 16px rgba(74, 29, 150, 0.28);
+  transition: all 0.2s;
+}
+
+.store-login-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(74, 29, 150, 0.38);
+}
+
+.store-login-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.store-login-footer {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.store-login-divider {
+  position: relative;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.store-login-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--di-border);
+}
+
+.store-login-divider span {
+  position: relative;
+  background: #FFFFFF;
+  padding: 0 12px;
+  font-size: 0.78rem;
+  color: var(--di-text-muted);
+}
+
+.store-login-wa-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #065F46;
+  text-decoration: none;
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+  transition: background 0.2s;
+}
+
+.store-login-wa-help:hover {
+  background: #D1FAE5;
+}
+
+.store-login-back a {
+  color: var(--di-text-secondary);
+  font-size: 0.82rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.store-login-back a:hover {
+  color: var(--di-purple);
+}
+
+@media (max-width: 640px) {
+  .amazon-dropdown-panel {
+    width: 320px;
+    right: -20px;
+  }
+  .amazon-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .amazon-grid-card.highlighted {
+    grid-column: span 1;
+  }
+}
