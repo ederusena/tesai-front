@@ -136,6 +136,10 @@ export default function Pedidos() {
               <Loader2 className="animate-spin" />
               <p>Carregando pedidos...</p>
             </div>
+          ) : orders.length === 0 ? (
+            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
+              Aguardando primeiras compras em tempo real...
+            </div>
           ) : (
             <AnimatePresence initial={false}>
               {orders.slice(0, 8).map((order, index) => (

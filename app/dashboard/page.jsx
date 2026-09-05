@@ -26,8 +26,7 @@ import {
   Legend,
 } from 'recharts';
 
-import { getAdminRevenue, getAdminTopProducts, getAdminChannels } from '../../src/services/api';
-import { botMetrics } from '../../src/data/mockData';
+import { getAdminRevenue, getAdminTopProducts, getAdminChannels, getAdminBotMetrics } from '../../src/services/api';
 import { formatCurrency, formatNumber } from '../../src/utils/formatters';
 
 // --- Animation Variants ---
@@ -85,6 +84,7 @@ export default function Dashboard() {
   const [revenue, setRevenue] = useState(null);
   const [topProducts, setTopProducts] = useState([]);
   const [channelData, setChannelData] = useState([]);
+  const [botMetrics, setBotMetrics] = useState({ totalAtendimentos: 0, taxaResolucao: 0, pedidosGerados: 0, status: 'online' });
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('7d');
 
@@ -94,11 +94,13 @@ export default function Dashboard() {
       getAdminRevenue(period),
       getAdminTopProducts(6),
       getAdminChannels(),
+      getAdminBotMetrics().catch(() => ({ totalAtendimentos: 0, taxaResolucao: 0, pedidosGerados: 0, status: 'online' })),
     ])
-      .then(([rev, top, channels]) => {
+      .then(([rev, top, channels, bot]) => {
         setRevenue(rev);
         setTopProducts(top);
         setChannelData(channels);
+        if (bot) setBotMetrics(bot);
       })
       .catch((err) => console.error('Erro ao carregar dashboard:', err))
       .finally(() => setLoading(false));

@@ -228,6 +228,14 @@ export async function getAdminChannels() {
   return apiFetch('/admin/analytics/channels')
 }
 
+/**
+ * Busca métricas reais do Bot WhatsApp
+ * @returns {Promise<Object>}
+ */
+export async function getAdminBotMetrics() {
+  return apiFetch('/admin/analytics/bot-metrics')
+}
+
 // --- Admin Pedidos ---
 
 /**
