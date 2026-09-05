@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Package, DollarSign, Clock, TrendingUp, Send, Eye, Loader2 } from 'lucide-react';
+import { Bell, Package, DollarSign, Clock, TrendingUp, Send, Eye, Loader2, CheckCircle, Truck } from 'lucide-react';
 import { getAdminOrders, addOrderTracking, notifyCustomer } from '../../../src/services/api';
 import { formatCurrency, getStatusBadge, getChannelBadgeClass } from '../../../src/utils/formatters.js';
+import { useAuth } from '../../../src/context/AuthContext';
 
 // Status filter map — maps UI labels to API status values
 const statusFilterMap = {
@@ -16,6 +17,7 @@ const statusFilterMap = {
 };
 
 export default function Pedidos() {
+  const { isOperator } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('Todos');
@@ -94,6 +96,27 @@ export default function Pedidos() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
+      {isOperator && (
+        <div 
+          style={{ 
+            background: 'rgba(56, 189, 248, 0.1)', 
+            border: '1px solid rgba(56, 189, 248, 0.25)', 
+            borderRadius: '10px', 
+            padding: '12px 16px', 
+            marginBottom: 'var(--space-md)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#38bdf8', fontSize: '0.875rem', fontWeight: 600 }}>
+            <Package size={18} />
+            <span>Painel do Operador — Visualização Simplificada de Pedidos & Expedição</span>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Foco em conferência e envio de rastreio</span>
+        </div>
+      )}
+
       {/* ============ 1. LIVE SALES FEED ============ */}
       <div className="card" style={{ marginBottom: 'var(--space-xl)' }}>
         <div className="card-header">
@@ -154,31 +177,57 @@ export default function Pedidos() {
       </div>
 
       {/* ============ 2. STATS ROW ============ */}
-      <div className="kpi-grid">
-        <motion.div className="stat-card" whileHover={{ y: -2 }}>
-          <div className="stat-card-icon lime"><DollarSign size={22} /></div>
-          <div className="stat-card-label">Total Pedidos</div>
-          <div className="stat-card-value">{totalVendas}</div>
-        </motion.div>
+      {isOperator ? (
+        /* Visualização Simplificada para Operador */
+        <div className="kpi-grid">
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon lime"><Package size={22} /></div>
+            <div className="stat-card-label">Total de Pedidos</div>
+            <div className="stat-card-value">{totalVendas}</div>
+          </motion.div>
 
-        <motion.div className="stat-card" whileHover={{ y: -2 }}>
-          <div className="stat-card-icon lime"><TrendingUp size={22} /></div>
-          <div className="stat-card-label">Receita Total</div>
-          <div className="stat-card-value">{formatCurrency(receitaHoje)}</div>
-        </motion.div>
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon coral"><Clock size={22} /></div>
+            <div className="stat-card-label">Aguardando Envio / Pagamento</div>
+            <div className="stat-card-value">{pedidosPendentes}</div>
+          </motion.div>
 
-        <motion.div className="stat-card" whileHover={{ y: -2 }}>
-          <div className="stat-card-icon coral"><Clock size={22} /></div>
-          <div className="stat-card-label">Pedidos Pendentes</div>
-          <div className="stat-card-value">{pedidosPendentes}</div>
-        </motion.div>
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon teal"><CheckCircle size={22} /></div>
+            <div className="stat-card-label">Prontos para Despacho</div>
+            <div className="stat-card-value">
+              {orders.filter((o) => o.status === 'paid' || o.payment?.status === 'confirmed').length}
+            </div>
+          </motion.div>
+        </div>
+      ) : (
+        /* Visualização Completa para Administrador */
+        <div className="kpi-grid">
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon lime"><DollarSign size={22} /></div>
+            <div className="stat-card-label">Total Pedidos</div>
+            <div className="stat-card-value">{totalVendas}</div>
+          </motion.div>
 
-        <motion.div className="stat-card" whileHover={{ y: -2 }}>
-          <div className="stat-card-icon teal"><Package size={22} /></div>
-          <div className="stat-card-label">Ticket Médio</div>
-          <div className="stat-card-value">{formatCurrency(ticketMedio)}</div>
-        </motion.div>
-      </div>
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon lime"><TrendingUp size={22} /></div>
+            <div className="stat-card-label">Receita Total</div>
+            <div className="stat-card-value">{formatCurrency(receitaHoje)}</div>
+          </motion.div>
+
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon coral"><Clock size={22} /></div>
+            <div className="stat-card-label">Pedidos Pendentes</div>
+            <div className="stat-card-value">{pedidosPendentes}</div>
+          </motion.div>
+
+          <motion.div className="stat-card" whileHover={{ y: -2 }}>
+            <div className="stat-card-icon teal"><Package size={22} /></div>
+            <div className="stat-card-label">Ticket Médio</div>
+            <div className="stat-card-value">{formatCurrency(ticketMedio)}</div>
+          </motion.div>
+        </div>
+      )}
 
       {/* ============ 3. FILTERS ============ */}
       <div className="pedidos-filters">

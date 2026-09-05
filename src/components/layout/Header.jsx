@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Search, Bell, Command, ShoppingCart } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
+import { useAuth } from '../../context/AuthContext'
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
@@ -22,6 +23,7 @@ export default function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { totalItens, notification } = useCart()
+  const { user } = useAuth()
   const [period, setPeriod] = useState('7d')
 
   const pageTitle = pathname.startsWith('/produto')
@@ -94,8 +96,18 @@ export default function Header() {
           <span className="notification-dot" />
         </button>
 
-        <div className="header-avatar" title="Eduardo Sena">
-          ES
+        <div 
+          className="header-avatar" 
+          title={user?.name || 'Usuário'}
+          style={{
+            background: user?.role === 'operator' ? '#0284c7' : 'var(--brand)',
+            color: '#ffffff',
+            fontWeight: 700
+          }}
+        >
+          {user?.name 
+            ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+            : 'TF'}
         </div>
       </div>
 

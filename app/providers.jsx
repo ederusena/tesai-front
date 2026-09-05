@@ -1,11 +1,14 @@
 'use client'
 
 import { CartProvider } from '../src/context/CartContext'
+import { AuthProvider } from '../src/context/AuthContext'
 
 export default function Providers({ children }) {
   return (
-    <CartProvider>
-      {children}
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        {children}
+      </CartProvider>
+    </AuthProvider>
   )
 }

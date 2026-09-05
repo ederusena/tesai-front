@@ -1,57 +1,47 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
-export async function middleware(request) {
-  let response = NextResponse.next({ request })
+export function middleware(request) {
+  const { pathname } = request.nextUrl
+  const authToken = request.cookies.get('tesai_auth_token')?.value
+  const userRole = request.cookies.get('tesai_role')?.value
 
-  // Skip middleware checks if keys are placeholder / unset to avoid blocking local developer setup
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!url || !key || url.includes('placeholder-url') || key.includes('placeholder-anon-key')) {
-    return response
-  }
-
-  try {
-    const supabase = createServerClient(
-      url,
-      key,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
-            })
-          },
-        },
-      }
-    )
-
-    // Refresh session if expired
-    const { data: { user } } = await supabase.auth.getUser()
-
-    // Protect dashboard routes
-    if (request.nextUrl.pathname.startsWith('/dashboard') && !user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+  // 1. Proteger rotas do /dashboard
+  if (pathname.startsWith('/dashboard')) {
+    if (!authToken) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('from', pathname)
+      return NextResponse.redirect(loginUrl)
     }
-  } catch (error) {
-    console.error('Middleware auth error:', error)
+
+    // Se for operador, só pode acessar Pedidos e WhatsApp (Omnichannel)
+    if (userRole === 'operator') {
+      const isOperatorAllowed = 
+        pathname.startsWith('/dashboard/pedidos') || 
+        pathname.startsWith('/dashboard/omnichannel')
+
+      if (!isOperatorAllowed) {
+        return NextResponse.redirect(new URL('/dashboard/pedidos', request.url))
+      }
+    }
   }
 
-  return response
+  // 2. Se já estiver logado e tentar acessar /login, redireciona para o painel correspondente
+  if (pathname === '/login' && authToken) {
+    if (userRole === 'operator') {
+      return NextResponse.redirect(new URL('/dashboard/pedidos', request.url))
+    }
+    return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  return NextResponse.next()
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Aplica o middleware em /dashboard e /login
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/dashboard/:path*',
+    '/login',
   ],
 }
