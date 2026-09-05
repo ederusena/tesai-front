@@ -5,12 +5,22 @@
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '')}/api` : 'http://localhost:3001/api')
 
-// --- Helper genérico para fetch ---
+// --- Helper genérico para fetch com propagação de JWT ---
 async function apiFetch(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`
+
+  // Anexa o token de autenticação automaticamente se disponível no cliente
+  let authToken = null
+  if (typeof window !== 'undefined') {
+    authToken = localStorage.getItem('tesai_auth_token')
+  }
+
+  const authHeader = authToken ? { Authorization: `Bearer ${authToken}` } : {}
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
+      ...authHeader,
       ...options.headers,
     },
     ...options,
