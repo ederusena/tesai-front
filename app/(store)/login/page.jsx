@@ -146,6 +146,19 @@ function LoginForm() {
           <span>Dúvidas ou primeiro acesso? <strong>Fale no WhatsApp</strong></span>
         </a>
 
+        {/* Criar Conta */}
+        <div style={{ marginTop: '16px', padding: '14px', background: '#FAF8F5', borderRadius: '12px', border: '1px solid #E8E4DF', textAlign: 'center' }}>
+          <p style={{ margin: '0 0 6px 0', fontSize: '0.84rem', color: '#4B5563' }}>
+            Ainda não tem uma conta na Tesãi?
+          </p>
+          <Link 
+            href={`/cadastro${from ? `?from=${encodeURIComponent(from)}` : ''}`}
+            style={{ color: '#4A1D96', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'underline' }}
+          >
+            Cadastre-se grátis em 1 minuto →
+          </Link>
+        </div>
+
         <div className="store-login-back">
           <Link href="/">← Voltar para a Loja</Link>
         </div>

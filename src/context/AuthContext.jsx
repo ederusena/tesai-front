@@ -64,6 +64,38 @@ export function AuthProvider({ children }) {
   }
 
   /**
+   * Realiza cadastro de novo cliente
+   */
+  const register = async ({ name, email, phone, cpf, password }) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, cpf, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao realizar cadastro.')
+      }
+
+      setToken(data.token)
+      setUser(data.user)
+
+      localStorage.setItem('tesai_auth_token', data.token)
+      localStorage.setItem('tesai_auth_user', JSON.stringify(data.user))
+
+      document.cookie = `tesai_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax`
+      document.cookie = `tesai_role=${data.user.role}; path=/; max-age=604800; SameSite=Lax`
+
+      return { success: true, user: data.user }
+    } catch (err) {
+      return { success: false, error: err.message }
+    }
+  }
+
+  /**
    * Encerra a sessão
    */
   const logout = useCallback(() => {
@@ -90,6 +122,7 @@ export function AuthProvider({ children }) {
         isAdmin,
         isOperator,
         login,
+        register,
         logout,
       }}
     >
