@@ -17,17 +17,60 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../../src/context/AuthContext'
 
-function maskPhone(value) {
-  return value
-    .replace(/\D/g, '')
-    .slice(0, 11)
-    .replace(/^(\d{2})(\d)/g, '($1) $2')
-    .replace(/(\d{5})(\d{4})$/, '$1-$2')
+const COUNTRY_CODES = [
+  { code: '+55', country: 'Brasil', flag: '🇧🇷', placeholder: '(11) 92000-9489' },
+  { code: '+595', country: 'Paraguai', flag: '🇵🇾', placeholder: '0981 123 456' },
+  { code: '+54', country: 'Argentina', flag: '🇦🇷', placeholder: '11 2345-6789' },
+  { code: '+1', country: 'EUA / Canadá', flag: '🇺🇸', placeholder: '(555) 123-4567' },
+  { code: '+598', country: 'Uruguai', flag: '🇺🇾', placeholder: '099 123 456' },
+  { code: '+351', country: 'Portugal', flag: '🇵🇹', placeholder: '912 345 678' },
+  { code: '+56', country: 'Chile', flag: '🇨🇱', placeholder: '9 1234 5678' },
+  { code: '+34', country: 'Espanha', flag: '🇪🇸', placeholder: '612 345 678' },
+  { code: '+591', country: 'Bolívia', flag: '🇧🇴', placeholder: '7123 4567' },
+  { code: '+51', country: 'Peru', flag: '🇵🇪', placeholder: '912 345 678' },
+  { code: 'custom', country: 'Outro', flag: '🌐', placeholder: 'Número celular' },
+]
+
+function formatPhoneByCountry(value, code) {
+  const digits = value.replace(/\D/g, '')
+
+  if (code === '+55') {
+    const d = digits.slice(0, 11)
+    if (d.length <= 2) return d.length > 0 ? `(${d}` : ''
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+  }
+
+  if (code === '+595') {
+    const d = digits.slice(0, 10)
+    if (d.length <= 4) return d
+    if (d.length <= 7) return `${d.slice(0, 4)} ${d.slice(4)}`
+    return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`
+  }
+
+  if (code === '+1') {
+    const d = digits.slice(0, 10)
+    if (d.length <= 3) return d.length > 0 ? `(${d}` : ''
+    if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+
+  if (code === '+54') {
+    const d = digits.slice(0, 11)
+    if (d.length <= 2) return d
+    if (d.length <= 6) return `${d.slice(0, 2)} ${d.slice(2)}`
+    return `${d.slice(0, 2)} ${d.slice(2, 6)}-${d.slice(6)}`
+  }
+
+  return digits.slice(0, 14)
 }
 
 function CadastroForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [countryCode, setCountryCode] = useState('+55')
+  const [customDdi, setCustomDdi] = useState('+')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -38,6 +81,14 @@ function CadastroForm() {
   const searchParams = useSearchParams()
   const from = searchParams?.get('from')
   const { register } = useAuth()
+
+  const selectedCountry = COUNTRY_CODES.find(c => c.code === countryCode) || COUNTRY_CODES[0]
+
+  const handleCountryChange = (e) => {
+    const newCode = e.target.value
+    setCountryCode(newCode)
+    setPhone('')
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -53,13 +104,24 @@ function CadastroForm() {
       return
     }
 
+    const effectiveDdi = countryCode === 'custom'
+      ? (customDdi.trim().startsWith('+') ? customDdi.trim() : `+${customDdi.trim()}`)
+      : countryCode
+
+    if (countryCode === 'custom' && (!customDdi || customDdi.trim() === '+')) {
+      setErrorMsg('Por favor, informe o código DDI do país (ex: +33, +44).')
+      return
+    }
+
+    const finalPhone = `${effectiveDdi} ${phone}`.trim()
+
     setLoading(true)
 
     try {
       const result = await register({
         name,
         email,
-        phone,
+        phone: finalPhone,
         password
       })
 
@@ -138,20 +200,58 @@ function CadastroForm() {
           </div>
         </div>
 
-        {/* WhatsApp / Celular (Sem necessidade de CPF) */}
+        {/* WhatsApp / Celular com Seletor de DDI Internacional */}
         <div className="store-input-group">
-          <label htmlFor="cad-phone">WhatsApp / Celular</label>
-          <div className="store-input-box">
-            <Phone size={18} className="store-input-icon" />
-            <input
-              id="cad-phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(maskPhone(e.target.value))}
-              placeholder="(00) 00000-0000"
-              required
-            />
+          <label htmlFor="cad-phone">WhatsApp / Celular (com DDI)</label>
+          <div className="store-phone-wrapper">
+            <select
+              value={countryCode}
+              onChange={handleCountryChange}
+              className="store-ddi-select"
+              aria-label="Selecionar código de país DDI"
+            >
+              {COUNTRY_CODES.map((item) => (
+                <option key={item.code} value={item.code}>
+                  {item.flag} {item.code === 'custom' ? 'Outro (+)' : item.code}
+                </option>
+              ))}
+            </select>
+
+            {countryCode === 'custom' && (
+              <input
+                type="text"
+                value={customDdi}
+                onChange={(e) => {
+                  let val = e.target.value
+                  if (!val.startsWith('+')) val = '+' + val.replace(/\D/g, '')
+                  setCustomDdi(val.slice(0, 5))
+                }}
+                placeholder="+DDI"
+                className="store-custom-ddi-input"
+                title="Código do país com + (ex: +33, +44, +81)"
+                required
+              />
+            )}
+
+            <div className="store-input-box" style={{ flex: 1 }}>
+              <Phone size={18} className="store-input-icon" />
+              <input
+                id="cad-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(formatPhoneByCountry(e.target.value, countryCode))}
+                placeholder={selectedCountry.placeholder}
+                required
+              />
+            </div>
           </div>
+          <small style={{ fontSize: '0.74rem', color: '#6B7280', marginTop: '4px', display: 'block' }}>
+            {countryCode === '+55' 
+              ? 'Brasil (+55): digite DDD + número com 9 dígitos.' 
+              : countryCode === '+595'
+              ? 'Paraguai (+595): digite o número do celular (ex: 0981 123 456).'
+              : `País selecionado: ${selectedCountry.country} (${countryCode}).`}
+          </small>
         </div>
 
         {/* Linha dupla: Senha e Confirmação */}

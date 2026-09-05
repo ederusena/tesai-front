@@ -15,6 +15,53 @@ import { createStoreOrder, confirmOrderPayment } from '../../../src/services/api
 const formatBRL = (v) => v?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const WHATSAPP_ADMIN = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '5545991562811'
 
+const COUNTRY_CODES = [
+  { code: '+55', country: 'Brasil', flag: '🇧🇷', placeholder: '(11) 92000-9489' },
+  { code: '+595', country: 'Paraguai', flag: '🇵🇾', placeholder: '0981 123 456' },
+  { code: '+54', country: 'Argentina', flag: '🇦🇷', placeholder: '11 2345-6789' },
+  { code: '+1', country: 'EUA / Canadá', flag: '🇺🇸', placeholder: '(555) 123-4567' },
+  { code: '+598', country: 'Uruguai', flag: '🇺🇾', placeholder: '099 123 456' },
+  { code: '+351', country: 'Portugal', flag: '🇵🇹', placeholder: '912 345 678' },
+  { code: '+56', country: 'Chile', flag: '🇨🇱', placeholder: '9 1234 5678' },
+  { code: '+34', country: 'Espanha', flag: '🇪🇸', placeholder: '612 345 678' },
+  { code: 'custom', country: 'Outro', flag: '🌐', placeholder: 'Número celular' },
+]
+
+function formatPhoneByCountry(value, code) {
+  const digits = value.replace(/\D/g, '')
+
+  if (code === '+55') {
+    const d = digits.slice(0, 11)
+    if (d.length <= 2) return d.length > 0 ? `(${d}` : ''
+    if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`
+    if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`
+    return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`
+  }
+
+  if (code === '+595') {
+    const d = digits.slice(0, 10)
+    if (d.length <= 4) return d
+    if (d.length <= 7) return `${d.slice(0, 4)} ${d.slice(4)}`
+    return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`
+  }
+
+  if (code === '+1') {
+    const d = digits.slice(0, 10)
+    if (d.length <= 3) return d.length > 0 ? `(${d}` : ''
+    if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+  }
+
+  if (code === '+54') {
+    const d = digits.slice(0, 11)
+    if (d.length <= 2) return d
+    if (d.length <= 6) return `${d.slice(0, 2)} ${d.slice(2)}`
+    return `${d.slice(0, 2)} ${d.slice(2, 6)}-${d.slice(6)}`
+  }
+
+  return digits.slice(0, 14)
+}
+
 export default function Checkout() {
   const { items, totalPrice, totalItems, clearCart } = useCart()
   const router = useRouter()
@@ -24,6 +71,8 @@ export default function Checkout() {
   const [order, setOrder] = useState(null)
   const [copied, setCopied] = useState(false)
   const [timer, setTimer] = useState(1800)
+  const [countryCode, setCountryCode] = useState('+55')
+  const [customDdi, setCustomDdi] = useState('+')
   
   const [form, setForm] = useState({
     name: '',
@@ -67,13 +116,17 @@ export default function Checkout() {
       alert('Por favor, preencha Nome, WhatsApp e CEP de entrega.')
       return
     }
-    setLoading(true)
+    const effectiveDdi = countryCode === 'custom'
+      ? (customDdi.trim().startsWith('+') ? customDdi.trim() : `+${customDdi.trim()}`)
+      : countryCode
+    const finalPhone = `${effectiveDdi} ${form.phone}`.trim()
+
     try {
       const orderData = {
         customer: {
           name: form.name,
           email: form.email || undefined,
-          phone: form.phone,
+          phone: finalPhone,
           cpf: form.cpf || undefined,
           addressCep: form.cep,
           addressStreet: `${form.street}, ${form.number || 'S/N'} ${form.complement || ''}`.trim(),
@@ -212,16 +265,72 @@ export default function Checkout() {
 
                   <div>
                     <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: 6, color: 'var(--di-text)' }}>
-                      WhatsApp / Telefone com DDD *
+                      WhatsApp / Celular com DDI *
                     </label>
-                    <input 
-                      type="tel" 
-                      required
-                      placeholder="(45) 99156-2811"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--di-border)', borderRadius: 8, fontSize: '0.9rem', outline: 'none' }}
-                    />
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <select
+                        value={countryCode}
+                        onChange={(e) => {
+                          setCountryCode(e.target.value)
+                          setForm({ ...form, phone: '' })
+                        }}
+                        style={{
+                          height: '44px',
+                          padding: '0 10px',
+                          border: '1px solid var(--di-border)',
+                          borderRadius: 8,
+                          fontSize: '0.86rem',
+                          fontWeight: 600,
+                          background: '#FAFAFA',
+                          color: '#374151',
+                          outline: 'none',
+                          cursor: 'pointer',
+                          maxWidth: '125px',
+                          flexShrink: 0
+                        }}
+                      >
+                        {COUNTRY_CODES.map((item) => (
+                          <option key={item.code} value={item.code}>
+                            {item.flag} {item.code === 'custom' ? 'Outro' : item.code}
+                          </option>
+                        ))}
+                      </select>
+
+                      {countryCode === 'custom' && (
+                        <input
+                          type="text"
+                          value={customDdi}
+                          onChange={(e) => {
+                            let val = e.target.value
+                            if (!val.startsWith('+')) val = '+' + val.replace(/\D/g, '')
+                            setCustomDdi(val.slice(0, 5))
+                          }}
+                          placeholder="+DDI"
+                          style={{
+                            width: '70px',
+                            height: '44px',
+                            padding: '0 8px',
+                            border: '1px solid var(--di-border)',
+                            borderRadius: 8,
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            textAlign: 'center',
+                            outline: 'none',
+                            flexShrink: 0
+                          }}
+                          required
+                        />
+                      )}
+
+                      <input 
+                        type="tel" 
+                        required
+                        placeholder={COUNTRY_CODES.find(c => c.code === countryCode)?.placeholder || 'Número celular'}
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: formatPhoneByCountry(e.target.value, countryCode) })}
+                        style={{ flex: 1, padding: '12px 14px', border: '1px solid var(--di-border)', borderRadius: 8, fontSize: '0.9rem', outline: 'none' }}
+                      />
+                    </div>
                   </div>
 
                   <div>
